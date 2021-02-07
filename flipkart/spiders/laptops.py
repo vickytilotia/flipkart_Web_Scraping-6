@@ -7,12 +7,12 @@ from time import sleep
 
 #github scrapy_seleinum is installed now.
 from scrapy_selenium import SeleniumRequest
-counter = 0 
+counter = 24 
 
 class LaptopsSpider(scrapy.Spider):
     name = 'laptops'
     allowed_domains = ['www.flipkart.com']
-    start_urls = ['https://www.flipkart.com/search?q=laptop&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=off&as=off']
+    start_urls = ['https://www.flipkart.com/search?q=laptops&otracker=searchhttps%3A%2F%2Fwww.flipkart.com%2Fsearch%3Fq%3Dlaptop&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=off&as=off&page=2']
     
     # def __init__(self):
     #     #inside it we do everything releated to selenium
@@ -59,12 +59,30 @@ class LaptopsSpider(scrapy.Spider):
                 'counter' : counter ,
                 'product_name' : product.xpath(".//div[@class='_4rR01T']/text()").get(),
                 'price' : product.xpath(".//div[@class='_30jeq3 _1_WHN1']/text()").get(),
-                'url' : product.xpath(".//a[@class='_1fQZEK']/@href").get(),
+                # 'url' : product.xpath(".//a[@class='_1fQZEK']/@href").get(),
+                'url' : response.urljoin(product.xpath(".//a[@class='_1fQZEK']/@href").get()),
                 'star' : product.xpath(".//div[@class='_3LWZlK']/text()").get(),
                 'rating' : product.xpath(".//span[@class='_2_R_DZ']/span/span[1]/text()").get(),
                 'reviews' : product.xpath(".//span[@class='_2_R_DZ']/span/span[3]/text()").get(),
                 
+
             }
+
+        # to scrape multiple pages
+        # rel_url = response.xpath("//a[@class = 'page-link' and @rel ='next']/@href").get()
+        next_page = response.urljoin(product.xpath("//a[@class = '_1LKTO3'][2]/@href").get())
+
+        #check if the next page exist or not?
+        if next_page:
+            yield scrapy.Request(url = next_page, callback=self.parse)
+
+
+
+
+
+
+
+
             #we can't define the callback method into the seleinum
             #so this parse method simply not work
             #so we pass the self.html to parse method
